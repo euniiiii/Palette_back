@@ -2,6 +2,8 @@ package com.project.palette;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @SpringBootApplication
 public class PaletteApplication {
@@ -10,4 +12,8 @@ public class PaletteApplication {
         SpringApplication.run(PaletteApplication.class, args);
     }
 
+    @Bean
+    public BCryptPasswordEncoder bCryptPasswordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 }
