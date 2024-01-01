@@ -1,5 +1,8 @@
 package com.project.palette.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.project.palette.Repository.MemberRepository;
 import com.project.palette.controller.KakaoMemberInfo;
 import com.project.palette.controller.OAuth2MemberInfo;
 import com.project.palette.entity.Member;
@@ -7,12 +10,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
-import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
@@ -28,9 +27,8 @@ public class OAuth2MemberService extends DefaultOAuth2UserService {
     private final RestTemplate restTemplate;
     private final BCryptPasswordEncoder encoder;
     private final MemberRepository memberRepository;
-    private final OAuth2AuthorizedClientService authorizedClientService;
 
-    public String accessToken;
+    private String accessToken;
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         OAuth2User oAuth2User = super.loadUser(userRequest);
@@ -47,7 +45,7 @@ public class OAuth2MemberService extends DefaultOAuth2UserService {
         String email = memberInfo.getEmail();
         String role = "ROLE_USER"; //일반 유저
         accessToken = userRequest.getAccessToken().getTokenValue();
-        System.out.println("tokenValue = " + accessToken);
+        log.info("accessToken = {}", accessToken);
 
         Optional<Member> findMember = memberRepository.findByName(username);
         Member member=null;
@@ -90,22 +88,53 @@ public class OAuth2MemberService extends DefaultOAuth2UserService {
         if (statusCode == HttpStatus.OK) {
             // 로그아웃 성공
             String responseBody = response.getBody();
-            System.out.println("로그아웃 응답: " + responseBody);
+            log.info("로그아웃 응답: {}",responseBody);
         } else {
             // 실패 처리
-            System.out.println("로그아웃 실패. 상태 코드: " + statusCode);
+            log.info("로그아웃 실패. 상태 코드: {}", statusCode);
         }
     }
-    public String getAccessTokenForUser(OAuth2AuthenticationToken authenticationToken) {
-        OAuth2AuthorizedClient authorizedClient = authorizedClientService.loadAuthorizedClient(
-                authenticationToken.getAuthorizedClientRegistrationId(), authenticationToken.getName());
 
-        if (authorizedClient != null) {
-            OAuth2AccessToken accessToken = authorizedClient.getAccessToken();
-            return accessToken.getTokenValue();
+    public String getMemberInfo() {
+        String kakao_api_url = "https://kapi.kakao.com/v2/user/me";
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + accessToken);
+
+        HttpEntity<String> entity = new HttpEntity<>(null, headers);
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                kakao_api_url,
+                HttpMethod.GET,
+                entity,
+                String.class
+        );
+
+        if (response.getStatusCode().is2xxSuccessful()) {
+            String userInfo = response.getBody();
+            return userInfo;
         } else {
-            return null; // 처리할 경우에 따라 null 또는 예외 처리
+            return "Failed to fetch user info. Status code: " + response.getStatusCodeValue();
         }
     }
 
+
+    public String getEmailFromMemberInfo() {
+        String memberInfo = getMemberInfo(); // 여기서 getMemberInfo() 메소드는 위에 작성하신 것으로 가정합니다.
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            // Parse the memberInfo string into a JSON object
+            JsonNode memberInfoJson = objectMapper.readTree(memberInfo);
+
+            // Get the email field from the JSON
+            String email = memberInfoJson.path("kakao_account").path("email").asText();
+
+            // Now 'email' contains the email address
+            return email;
+        } catch (Exception e) {
+            // Handle parsing exceptions
+            e.printStackTrace();
+            return "Failed to parse member info or extract email";
+        }
+    }
 }

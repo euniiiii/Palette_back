@@ -1,27 +1,21 @@
 package com.project.palette.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.project.palette.entity.Member;
+import com.project.palette.service.MemberService;
 import com.project.palette.service.OAuth2MemberService;
-import jakarta.servlet.http.HttpSession;
+import com.project.palette.service.PrincipalDetails;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.client.RestTemplate;
 
 import java.security.Principal;
 
@@ -35,6 +29,7 @@ public class LoginController {
     private String kakaoRedirectUri;
 
     private final OAuth2MemberService oAuth2MemberService;
+    private final MemberService memberService;
 
 
     @GetMapping("/oauth2/api/login")
@@ -50,8 +45,10 @@ public class LoginController {
         return "redirect:/oauth2/api/login";
     }
 
-
-
-
-
+    @RequestMapping("/oauth2/api/member-info")
+    public ResponseEntity<Member> memberInfo() {
+        String email = oAuth2MemberService.getEmailFromMemberInfo();
+        Member member = memberService.getMemberInfoByEmail(email);
+        return new ResponseEntity<>(member, HttpStatus.OK);
+    }
 }
