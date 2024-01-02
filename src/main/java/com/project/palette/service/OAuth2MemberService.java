@@ -67,7 +67,7 @@ public class OAuth2MemberService extends DefaultOAuth2UserService {
     }
 
 
-    public void logout() {
+    public HttpStatus logout() {
         String kakaoLogoutUrl = "https://kapi.kakao.com/v1/user/logout";
 
         HttpHeaders headers = new HttpHeaders();
@@ -93,6 +93,7 @@ public class OAuth2MemberService extends DefaultOAuth2UserService {
             // 실패 처리
             log.info("로그아웃 실패. 상태 코드: {}", statusCode);
         }
+        return statusCode;
     }
 
     public String getMemberInfo() {

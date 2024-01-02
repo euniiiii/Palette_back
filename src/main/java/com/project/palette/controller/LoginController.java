@@ -15,6 +15,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.security.Principal;
@@ -39,10 +40,14 @@ public class LoginController {
         return "login";
     }
 
-    @RequestMapping("/oauth2/api/logout")
-    public String logout() {
-        oAuth2MemberService.logout();
-        return "redirect:/oauth2/api/login";
+    @PostMapping("/oauth2/api/logout")
+    public ResponseEntity<String> logout() {
+        HttpStatus statusCode = oAuth2MemberService.logout();
+        if (statusCode == HttpStatus.OK) {
+            log.info("Success: {}",statusCode);
+            return new ResponseEntity<>(statusCode);
+        }
+        return new ResponseEntity<>(statusCode);
     }
 
     @RequestMapping("/oauth2/api/member-info")
