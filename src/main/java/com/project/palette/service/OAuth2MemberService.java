@@ -1,5 +1,6 @@
 package com.project.palette.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.palette.Repository.MemberRepository;
@@ -137,5 +138,51 @@ public class OAuth2MemberService extends DefaultOAuth2UserService {
             e.printStackTrace();
             return "Failed to parse member info or extract email";
         }
+    }
+
+
+    public HttpStatus deleteMember() {
+        String memberInfo = getMemberInfo();
+        log.info("memberInfo ={}", memberInfo);
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            JsonNode jsonNode = objectMapper.readTree(memberInfo);
+            String memberId = jsonNode.get("id").toString(); //여기서 MemberId는 키값이 아닌 providerId
+            Member member = memberRepository.findByProviderId(memberId).get();
+            log.info("member ={} ", member);
+        } catch (JsonProcessingException e) {
+            log.error("Error parsing memberInfo JSON: {}", e.getMessage());
+        }
+        //카카오 서비스 탈퇴 처리
+        HttpStatus httpStatus = disconnectKakao();
+        return httpStatus;
+    }
+
+    private HttpStatus disconnectKakao() {
+        String kakaoLogoutUrl = "https://kapi.kakao.com/v1/user/unlink";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken);
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+
+        HttpEntity<String> entity = new HttpEntity<>(null, headers);
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                kakaoLogoutUrl,
+                HttpMethod.POST,
+                entity,
+                String.class
+        );
+
+        HttpStatus statusCode = (HttpStatus) response.getStatusCode();
+        if (statusCode == HttpStatus.OK) {
+            String responseBody = response.getBody();
+            log.info("연결 끊기 응답: {}", responseBody);
+        } else {
+            // 실패 처리
+            log.info("연결 끊기 실패. 상태 코드: {}", statusCode);
+        }
+        return statusCode;
     }
 }

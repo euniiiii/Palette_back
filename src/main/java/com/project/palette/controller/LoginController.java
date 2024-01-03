@@ -44,16 +44,23 @@ public class LoginController {
     public ResponseEntity<String> logout() {
         HttpStatus statusCode = oAuth2MemberService.logout();
         if (statusCode == HttpStatus.OK) {
-            log.info("Success: {}",statusCode);
+            log.info("Success: {}", statusCode);
             return new ResponseEntity<>(statusCode);
         }
         return new ResponseEntity<>(statusCode);
     }
 
-    @RequestMapping("/oauth2/api/member-info")
+    @GetMapping("/oauth2/api/member-info")
     public ResponseEntity<Member> memberInfo() {
         String email = oAuth2MemberService.getEmailFromMemberInfo();
         Member member = memberService.getMemberInfoByEmail(email);
         return new ResponseEntity<>(member, HttpStatus.OK);
+    }
+
+    @RequestMapping("/oauth2/api/revoke")
+    public ResponseEntity<String> deleteMember() {
+        HttpStatus statusCode = oAuth2MemberService.deleteMember();
+        log.info("statusCode ={}", statusCode);
+        return new ResponseEntity<>(statusCode);
     }
 }
