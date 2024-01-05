@@ -150,6 +150,8 @@ public class OAuth2MemberService extends DefaultOAuth2UserService {
             String memberId = jsonNode.get("id").toString(); //여기서 MemberId는 키값이 아닌 providerId
             Member member = memberRepository.findByProviderId(memberId).get();
             log.info("member ={} ", member);
+
+            memberRepository.delete(member);
         } catch (JsonProcessingException e) {
             log.error("Error parsing memberInfo JSON: {}", e.getMessage());
         }
