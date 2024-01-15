@@ -14,12 +14,8 @@ import java.util.Optional;
 public class MemberService {
     private final MemberRepository memberRepository;
 
-    public Member getMemberInfoByEmail(String email) {
-        Optional<Member> member = memberRepository.findByEmail(email);
-        if (member.isPresent()) {
-            return member.get();
-        }
-        return null;
+    public Optional<Member> getMemberInfoByEmail(String email) {
+        return memberRepository.findByEmail(email);
 
     }
 }

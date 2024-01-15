@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.palette.Repository.MemberRepository;
 import com.project.palette.controller.KakaoMemberInfo;
+import com.project.palette.controller.NaverMemberInfo;
 import com.project.palette.controller.OAuth2MemberInfo;
 import com.project.palette.entity.Member;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -38,9 +40,13 @@ public class OAuth2MemberService extends DefaultOAuth2UserService {
 
         String registrationId = userRequest.getClientRegistration().getRegistrationId();
         System.out.println("registrationId = " + registrationId);
-        memberInfo = new KakaoMemberInfo(oAuth2User.getAttributes());
-
         String provider = userRequest.getClientRegistration().getRegistrationId();
+        if (provider.equals("kakao")) {
+            memberInfo = new KakaoMemberInfo(oAuth2User.getAttributes());
+        }
+        if (provider.equals("naver")) {
+            memberInfo = new NaverMemberInfo((Map)oAuth2User.getAttributes().get("response"));
+        }
         String providerId = memberInfo.getProviderId();
         String username = provider + "_" + providerId; //중복이 발생하지 않도록 provider와 providerId를 조합
         String email = memberInfo.getEmail();
@@ -121,10 +127,11 @@ public class OAuth2MemberService extends DefaultOAuth2UserService {
 
 
     public String getEmailFromMemberInfo() {
-        String memberInfo = getMemberInfo(); // 여기서 getMemberInfo() 메소드는 위에 작성하신 것으로 가정합니다.
 
-        ObjectMapper objectMapper = new ObjectMapper();
         try {
+            String memberInfo = getMemberInfo(); // 여기서 getMemberInfo() 메소드는 위에 작성하신 것으로 가정합니다.
+
+            ObjectMapper objectMapper = new ObjectMapper();
             // Parse the memberInfo string into a JSON object
             JsonNode memberInfoJson = objectMapper.readTree(memberInfo);
 
