@@ -9,14 +9,18 @@ import com.project.palette.controller.NaverMemberInfo;
 import com.project.palette.controller.OAuth2MemberInfo;
 import com.project.palette.entity.Member;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 
@@ -30,8 +34,9 @@ public class OAuth2MemberService extends DefaultOAuth2UserService {
     private final RestTemplate restTemplate;
     private final BCryptPasswordEncoder encoder;
     private final MemberRepository memberRepository;
-
+    private final NaverProperties naverProperties;
     private String accessToken;
+    private String provider;
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         OAuth2User oAuth2User = super.loadUser(userRequest);
@@ -40,7 +45,7 @@ public class OAuth2MemberService extends DefaultOAuth2UserService {
 
         String registrationId = userRequest.getClientRegistration().getRegistrationId();
         System.out.println("registrationId = " + registrationId);
-        String provider = userRequest.getClientRegistration().getRegistrationId();
+        provider = userRequest.getClientRegistration().getRegistrationId();
         if (provider.equals("kakao")) {
             memberInfo = new KakaoMemberInfo(oAuth2User.getAttributes());
         }
@@ -75,6 +80,55 @@ public class OAuth2MemberService extends DefaultOAuth2UserService {
 
 
     public HttpStatus logout() {
+        if (provider.equals("kakao")) {
+            return kakaoLogout();
+        }
+        if (provider.equals("naver")) {
+            return naverLogout();
+        }
+        return HttpStatus.BAD_REQUEST;
+    }
+
+    private HttpStatus naverLogout() {
+        String naverLogoutUrl = "https://nid.naver.com/oauth2.0/token";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+
+        HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(createNaverLogoutBody(accessToken), headers);
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                naverLogoutUrl,
+                HttpMethod.POST,
+                entity,
+                String.class
+        );
+        HttpStatus statusCode = (HttpStatus) response.getStatusCode();
+        if (statusCode == HttpStatus.OK) {
+            // 로그아웃 성공
+            String responseBody = response.getBody();
+            log.info("로그아웃 응답: {}",responseBody);
+        } else {
+            // 실패 처리
+            log.info("로그아웃 실패. 상태 코드: {}", statusCode);
+        }
+        return statusCode;
+    }
+
+    private MultiValueMap<String, String> createNaverLogoutBody(String accessToken) {
+        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+        log.info("naverProperties ={} ", naverProperties);
+        body.add("grant_type", "delete");
+        body.add("service_provider","NAVER");
+        body.add("client_id", naverProperties.getClientId());
+        body.add("client_secret", naverProperties.getClientSecret());
+        body.add("redirect_uri", naverProperties.getRedirectUri());
+        body.add("access_token", accessToken);
+        return body;
+    }
+
+    private HttpStatus kakaoLogout() {
         String kakaoLogoutUrl = "https://kapi.kakao.com/v1/user/logout";
 
         HttpHeaders headers = new HttpHeaders();
