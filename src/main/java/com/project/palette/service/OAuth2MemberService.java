@@ -158,14 +158,23 @@ public class OAuth2MemberService extends DefaultOAuth2UserService {
     }
 
     public String getMemberInfo() {
-        String kakao_api_url = "https://kapi.kakao.com/v2/user/me";
+        if (provider.equals("kakao")) {
+            return getMemberInfo("https://kapi.kakao.com/v2/user/me");
+        }
+        if (provider.equals("naver")) {
+            return getMemberInfo("https://openapi.naver.com/v1/nid/me");
+        }
+        return null;
+    }
+
+    private String getMemberInfo(String api_url) {
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + accessToken);
 
         HttpEntity<String> entity = new HttpEntity<>(null, headers);
 
         ResponseEntity<String> response = restTemplate.exchange(
-                kakao_api_url,
+                api_url,
                 HttpMethod.GET,
                 entity,
                 String.class
@@ -173,6 +182,7 @@ public class OAuth2MemberService extends DefaultOAuth2UserService {
 
         if (response.getStatusCode().is2xxSuccessful()) {
             String userInfo = response.getBody();
+            log.info("userinfo ={} ", userInfo);
             return userInfo;
         } else {
             return "Failed to fetch user info. Status code: " + response.getStatusCodeValue();
@@ -181,23 +191,33 @@ public class OAuth2MemberService extends DefaultOAuth2UserService {
 
 
     public String getEmailFromMemberInfo() {
-
         try {
-            String memberInfo = getMemberInfo(); // 여기서 getMemberInfo() 메소드는 위에 작성하신 것으로 가정합니다.
+            String memberInfo = getMemberInfo(); // Assuming you have a method to retrieve member info
 
             ObjectMapper objectMapper = new ObjectMapper();
-            // Parse the memberInfo string into a JSON object
             JsonNode memberInfoJson = objectMapper.readTree(memberInfo);
 
-            // Get the email field from the JSON
-            String email = memberInfoJson.path("kakao_account").path("email").asText();
+            String email = getEmailFromJson(memberInfoJson);
 
-            // Now 'email' contains the email address
             return email;
         } catch (Exception e) {
             // Handle parsing exceptions
             e.printStackTrace();
             return "Failed to parse member info or extract email";
+        }
+    }
+
+    private String getEmailFromJson(JsonNode memberInfoJson) { //받아온 회원 정보에서 이메일만 가져오는 메소드
+        // Check if the JSON structure is from Kakao login
+        if (memberInfoJson.has("kakao_account")) {
+            // Extract email from Kakao login response
+            return memberInfoJson.path("kakao_account").path("email").asText();
+        } else if (memberInfoJson.has("response")) {
+            // Extract email from another type of response (assuming it has "email" field)
+            return memberInfoJson.path("response").path("email").asText();
+        } else {
+            // Handle other response structures as needed
+            return "Email extraction not supported for this response structure";
         }
     }
 
