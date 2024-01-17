@@ -53,7 +53,7 @@ public class LoginController {
                 .body(response);
     }
 
-    @DeleteMapping("/oauth2/api/revoke")
+    @GetMapping("/oauth2/api/revoke")
     public ResponseEntity<String> deleteMember() {
         HttpStatus statusCode = oAuth2MemberService.deleteMember();
         log.info("statusCode ={}", statusCode);

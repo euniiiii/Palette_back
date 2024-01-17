@@ -84,49 +84,11 @@ public class OAuth2MemberService extends DefaultOAuth2UserService {
             return kakaoLogout();
         }
         if (provider.equals("naver")) {
-            return naverLogout();
+            return disconnectNaver();
         }
         return HttpStatus.BAD_REQUEST;
     }
 
-    private HttpStatus naverLogout() {
-        String naverLogoutUrl = "https://nid.naver.com/oauth2.0/token";
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-
-
-        HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(createNaverLogoutBody(accessToken), headers);
-
-        ResponseEntity<String> response = restTemplate.exchange(
-                naverLogoutUrl,
-                HttpMethod.POST,
-                entity,
-                String.class
-        );
-        HttpStatus statusCode = (HttpStatus) response.getStatusCode();
-        if (statusCode == HttpStatus.OK) {
-            // 로그아웃 성공
-            String responseBody = response.getBody();
-            log.info("로그아웃 응답: {}",responseBody);
-        } else {
-            // 실패 처리
-            log.info("로그아웃 실패. 상태 코드: {}", statusCode);
-        }
-        return statusCode;
-    }
-
-    private MultiValueMap<String, String> createNaverLogoutBody(String accessToken) {
-        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
-        log.info("naverProperties ={} ", naverProperties);
-        body.add("grant_type", "delete");
-        body.add("service_provider","NAVER");
-        body.add("client_id", naverProperties.getClientId());
-        body.add("client_secret", naverProperties.getClientSecret());
-        body.add("redirect_uri", naverProperties.getRedirectUri());
-        body.add("access_token", accessToken);
-        return body;
-    }
 
     private HttpStatus kakaoLogout() {
         String kakaoLogoutUrl = "https://kapi.kakao.com/v1/user/logout";
@@ -181,9 +143,7 @@ public class OAuth2MemberService extends DefaultOAuth2UserService {
         );
 
         if (response.getStatusCode().is2xxSuccessful()) {
-            String userInfo = response.getBody();
-            log.info("userinfo ={} ", userInfo);
-            return userInfo;
+            return response.getBody();
         } else {
             return "Failed to fetch user info. Status code: " + response.getStatusCodeValue();
         }
@@ -223,21 +183,18 @@ public class OAuth2MemberService extends DefaultOAuth2UserService {
 
 
     public HttpStatus deleteMember() {
-        String memberInfo = getMemberInfo();
-        log.info("memberInfo ={}", memberInfo);
-        ObjectMapper objectMapper = new ObjectMapper();
-        try {
-            JsonNode jsonNode = objectMapper.readTree(memberInfo);
-            String memberId = jsonNode.get("id").toString(); //여기서 MemberId는 키값이 아닌 providerId
-            Member member = memberRepository.findByProviderId(memberId).get();
-            log.info("member ={} ", member);
-
-            memberRepository.delete(member);
-        } catch (JsonProcessingException e) {
-            log.error("Error parsing memberInfo JSON: {}", e.getMessage());
-        }
+        String email = getEmailFromMemberInfo();
+        Optional<Member> member = memberRepository.findByEmail(email);
+        log.info("member ={} ", member);
+        member.ifPresent(memberRepository::delete);
         //카카오 서비스 탈퇴 처리
-        HttpStatus httpStatus = disconnectKakao();
+        HttpStatus httpStatus = null;
+        if (provider.equals("kakao")) {
+            httpStatus = disconnectKakao();
+        }
+        if (provider.equals("naver")) {
+            httpStatus = disconnectNaver();
+        }
         return httpStatus;
     }
 
@@ -267,5 +224,42 @@ public class OAuth2MemberService extends DefaultOAuth2UserService {
             log.info("연결 끊기 실패. 상태 코드: {}", statusCode);
         }
         return statusCode;
+    }
+    private HttpStatus disconnectNaver() {
+        String naverLogoutUrl = "https://nid.naver.com/oauth2.0/token";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+
+        HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(createNaverLogoutBody(accessToken), headers);
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                naverLogoutUrl,
+                HttpMethod.POST,
+                entity,
+                String.class
+        );
+        HttpStatus statusCode = (HttpStatus) response.getStatusCode();
+        if (statusCode == HttpStatus.OK) {
+            // 로그아웃 성공
+            String responseBody = response.getBody();
+            log.info("로그아웃 응답: {}",responseBody);
+        } else {
+            // 실패 처리
+            log.info("로그아웃 실패. 상태 코드: {}", statusCode);
+        }
+        return statusCode;
+    }
+    private MultiValueMap<String, String> createNaverLogoutBody(String accessToken) {
+        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+        log.info("naverProperties ={} ", naverProperties);
+        body.add("grant_type", "delete");
+        body.add("service_provider","NAVER");
+        body.add("client_id", naverProperties.getClientId());
+        body.add("client_secret", naverProperties.getClientSecret());
+        body.add("redirect_uri", naverProperties.getRedirectUri());
+        body.add("access_token", accessToken);
+        return body;
     }
 }
