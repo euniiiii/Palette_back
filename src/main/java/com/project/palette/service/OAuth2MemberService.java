@@ -1,6 +1,5 @@
 package com.project.palette.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.palette.Repository.MemberRepository;
@@ -9,11 +8,9 @@ import com.project.palette.controller.NaverMemberInfo;
 import com.project.palette.controller.OAuth2MemberInfo;
 import com.project.palette.entity.Member;
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
@@ -74,7 +71,9 @@ public class OAuth2MemberService extends DefaultOAuth2UserService {
         else{
             member=findMember.get();
         }
-
+//        ResponseEntity<String> response = ResponseEntity.ok()
+//                .header("Access-Token", accessToken)
+//                .body("사용자 " + username + "에 대한 엑세스 토큰이 저장되었습니다.");
         return new PrincipalDetails(member, oAuth2User.getAttributes());
     }
 
