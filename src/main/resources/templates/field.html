@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Field Selection</title>
+</head>
+<body>
+<h1>Field Selection</h1>
+
+<form th:action="@{/member/field}" method="post">
+    <select name="selectedFiled">
+        <!-- Use the values passed from the model -->
+        <option th:each="field : ${fieldValues}" th:value="${field}" th:text="${field.field}"></option>
+    </select>
+
+    <button type="submit">Submit</button>
+</form>
+</body>
+</html>

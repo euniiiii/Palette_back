@@ -1,9 +1,6 @@
 package com.project.palette.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
@@ -21,6 +18,8 @@ public class Member {
     private String role; //유저 권한 (일반 유저, 관리지ㅏ)
     private String provider; //공급자 (google, facebook ...)
     private String providerId; //공급 아이디
+    @Enumerated(EnumType.STRING)
+    private Field field;
     @Builder
     public Member(String name, String password, String email, String role, String provider, String providerId) {
         this.name = name;
@@ -33,6 +32,10 @@ public class Member {
 
     public Member() {
 
+    }
+
+    public void updateField(Field selectedField) {
+        this.field = selectedField;
     }
 }
 

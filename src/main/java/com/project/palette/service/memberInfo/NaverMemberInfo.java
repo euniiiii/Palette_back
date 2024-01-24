@@ -1,6 +1,5 @@
-package com.project.palette.controller;
+package com.project.palette.service.memberInfo;
 
-import com.project.palette.service.OAuth2MemberService;
 import lombok.AllArgsConstructor;
 
 import java.util.Map;

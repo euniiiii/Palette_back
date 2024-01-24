@@ -1,4 +1,4 @@
-package com.project.palette.controller;
+package com.project.palette.service.memberInfo;
 
 public interface OAuth2MemberInfo {
     String getProviderId(); //공급자 아이디

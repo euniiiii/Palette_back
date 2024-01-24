@@ -1,4 +1,4 @@
-package com.project.palette.service;
+package com.project.palette.service.memberInfo;
 
 import lombok.Getter;
 import lombok.Setter;

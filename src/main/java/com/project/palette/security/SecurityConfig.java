@@ -31,6 +31,7 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @Slf4j
 public class SecurityConfig {
     private final OAuth2MemberService oAuth2MemberService;
+    private final FieldCheckSuccessHandler fieldCheckSuccessHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -47,7 +48,10 @@ public class SecurityConfig {
                     log.info("oauth2 configure");
                     oauth2
                             .loginPage("/oauth2/api/login")
-                            .userInfoEndpoint(userInfoEndpointConfig -> userInfoEndpointConfig.userService(oAuth2MemberService));
+                            .userInfoEndpoint(userInfoEndpointConfig -> userInfoEndpointConfig.userService(oAuth2MemberService))
+                            .successHandler(fieldCheckSuccessHandler);
+
+
                 });
 
 

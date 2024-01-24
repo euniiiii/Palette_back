@@ -1,4 +1,4 @@
-package com.project.palette.controller;
+package com.project.palette.service.memberInfo;
 
 import lombok.AllArgsConstructor;
 

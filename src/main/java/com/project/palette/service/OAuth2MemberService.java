@@ -3,10 +3,12 @@ package com.project.palette.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.palette.Repository.MemberRepository;
-import com.project.palette.controller.KakaoMemberInfo;
-import com.project.palette.controller.NaverMemberInfo;
-import com.project.palette.controller.OAuth2MemberInfo;
+import com.project.palette.entity.Field;
 import com.project.palette.entity.Member;
+import com.project.palette.service.memberInfo.KakaoMemberInfo;
+import com.project.palette.service.memberInfo.NaverMemberInfo;
+import com.project.palette.service.memberInfo.NaverProperties;
+import com.project.palette.service.memberInfo.OAuth2MemberInfo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
@@ -16,9 +18,12 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.view.RedirectView;
 
 
 import java.util.Map;
@@ -27,6 +32,7 @@ import java.util.Optional;
 @Service
 @Slf4j
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class OAuth2MemberService extends DefaultOAuth2UserService {
     private final RestTemplate restTemplate;
     private final BCryptPasswordEncoder encoder;
@@ -35,6 +41,7 @@ public class OAuth2MemberService extends DefaultOAuth2UserService {
     private String accessToken;
     private String provider;
     @Override
+    @Transactional
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         OAuth2User oAuth2User = super.loadUser(userRequest);
         OAuth2MemberInfo memberInfo = null;
@@ -59,6 +66,10 @@ public class OAuth2MemberService extends DefaultOAuth2UserService {
         Optional<Member> findMember = memberRepository.findByName(username);
         Member member=null;
         if (findMember.isEmpty()) { //찾지 못했다면
+            RedirectView redirectView = new RedirectView("/additionalInfoInputPage");
+            ModelAndView modelAndView = new ModelAndView(redirectView);
+
+
             member = Member.builder()
                     .name(username)
                     .email(email)
@@ -180,7 +191,7 @@ public class OAuth2MemberService extends DefaultOAuth2UserService {
         }
     }
 
-
+    @Transactional
     public HttpStatus deleteMember() {
         String email = getEmailFromMemberInfo();
         Optional<Member> member = memberRepository.findByEmail(email);
@@ -260,5 +271,12 @@ public class OAuth2MemberService extends DefaultOAuth2UserService {
         body.add("redirect_uri", naverProperties.getRedirectUri());
         body.add("access_token", accessToken);
         return body;
+    }
+    @Transactional
+    public void updateMemberField(Field selectedField) {
+        String email = getEmailFromMemberInfo();
+        Member member = memberRepository.findByEmail(email)
+                .orElseThrow(IllegalArgumentException::new);
+        member.updateField(selectedField);
     }
 }

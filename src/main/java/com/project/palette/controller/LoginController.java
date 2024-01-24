@@ -1,7 +1,7 @@
 package com.project.palette.controller;
 
+import com.project.palette.Repository.MemberRepository;
 import com.project.palette.entity.Member;
-import com.project.palette.service.MemberService;
 import com.project.palette.service.OAuth2MemberService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,8 +26,7 @@ import java.util.Optional;
 public class LoginController {
 
     private final OAuth2MemberService oAuth2MemberService;
-    private final MemberService memberService;
-
+    private final MemberRepository memberRepository;
     @PostMapping("/oauth2/api/logout")
     public ResponseEntity<String> logout() {
         HttpStatus statusCode = oAuth2MemberService.logout();
@@ -41,7 +40,7 @@ public class LoginController {
     @GetMapping("/oauth2/api/member-info")
     public ResponseEntity<?> memberInfo() {
         String email = oAuth2MemberService.getEmailFromMemberInfo();
-        Optional<Member> member = memberService.getMemberInfoByEmail(email);
+        Optional<Member> member = memberRepository.findByEmail(email);
         if (member.isPresent()) {
             return new ResponseEntity<>(member.get(), HttpStatus.OK);
         }
