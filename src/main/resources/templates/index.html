@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+  <script>
+    function logout() {
+      var form = document.createElement('form');
+      form.method = 'POST';
+      form.action = '/oauth2/api/logout';
+
+      // Optional: Add any additional parameters needed for the logout request
+      // For instance, you might include CSRF tokens or other data
+
+      document.body.appendChild(form);
+      form.submit();
+    }
+  </script>
+</head>
+<body>
+index
+<a href="javascript:void(0);" onclick="logout()">Log out</a>
+</body>
+</html>
