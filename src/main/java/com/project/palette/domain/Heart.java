@@ -1,10 +1,12 @@
 package com.project.palette.domain;
 
 import jakarta.persistence.*;
+import lombok.Getter;
 
 import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
+@Getter
 public class Heart {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "heart_id")

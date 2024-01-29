@@ -1,11 +1,13 @@
 package com.project.palette.service;
 
 import com.project.palette.domain.Project;
+import com.project.palette.dto.ProjectAddDto;
 import com.project.palette.repository.DslProjectRepository;
 import com.project.palette.repository.ProjectRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -24,5 +26,21 @@ public class ProjectService {
         Optional<Project> findProject =
                 projectRepository.findById(projectId);
         return findProject.orElse(null);
+    }
+
+    public HttpStatus saveProject(ProjectAddDto projectAddDto) {
+        Project project = Project.builder()
+                .title(projectAddDto.getTitle())
+                .content(projectAddDto.getContent())
+                .likeCount(0)
+                .viewCount(0)
+                .uploadFile(projectAddDto.getUploadFile())
+                .build();
+        Project saveProject = projectRepository.save(project);
+        if (saveProject.getId() != null) {
+            return HttpStatus.CREATED;
+        }
+        return HttpStatus.BAD_REQUEST;
+
     }
 }

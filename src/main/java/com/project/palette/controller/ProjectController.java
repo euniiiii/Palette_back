@@ -1,6 +1,7 @@
 package com.project.palette.controller;
 
 import com.project.palette.domain.Project;
+import com.project.palette.dto.ProjectAddDto;
 import com.project.palette.service.ProjectService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -10,11 +11,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.*;
 
-
-@Controller
+@RestController
 @RequiredArgsConstructor
 public class ProjectController {
     private final ProjectService projectService;
@@ -35,6 +34,12 @@ public class ProjectController {
             return new ResponseEntity<>(project, HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    @PostMapping("/api/projects")
+    public ResponseEntity<String> addProject(@RequestBody ProjectAddDto projectAddDto) {
+        HttpStatus httpStatus = projectService.saveProject(projectAddDto);
+        return new ResponseEntity<>(httpStatus);
     }
 
 }
