@@ -63,4 +63,13 @@ public class ProjectController {
         return new ResponseEntity<>(httpStatus);
     }
 
+    @DeleteMapping("/api/projects/{projectId}")
+    public ResponseEntity<String> deleteProject(@PathVariable Long projectId) {
+        HttpStatus httpStatus = projectService.deleteProject(projectId);
+        if (httpStatus.equals(HttpStatus.NOT_FOUND)) {
+            return new ResponseEntity<>("이미 삭제된 게시글입니다.", httpStatus);
+        }
+        return new ResponseEntity<>(httpStatus);
+    }
+
 }

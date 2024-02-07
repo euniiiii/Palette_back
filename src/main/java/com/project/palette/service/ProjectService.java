@@ -50,11 +50,20 @@ public class ProjectService {
     @Transactional
     public HttpStatus updateProject(Long projectId, ProjectUpdateDto projectUpdateDto) {
         Optional<Project> findProject = projectRepository.findById(projectId);
-        if (!findProject.isPresent()) {
+        if (findProject.isEmpty()) {
             return HttpStatus.NOT_FOUND;
         }
         Project project = findProject.get();
         project.updateProject(projectUpdateDto);
+        return HttpStatus.OK;
+    }
+    @Transactional
+    public HttpStatus deleteProject(Long projectId) {
+        Optional<Project> findProject = projectRepository.findById(projectId);
+        if (findProject.isEmpty()) {
+            return HttpStatus.NOT_FOUND;
+        }
+        projectRepository.delete(findProject.get());
         return HttpStatus.OK;
     }
 }
