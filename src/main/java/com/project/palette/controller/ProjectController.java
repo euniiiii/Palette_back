@@ -2,19 +2,25 @@ package com.project.palette.controller;
 
 import com.project.palette.domain.Project;
 import com.project.palette.dto.ProjectAddDto;
+import com.project.palette.dto.ProjectUpdateDto;
 import com.project.palette.service.ProjectService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Objects;
 
 @RestController
 @RequiredArgsConstructor
+@Slf4j
 public class ProjectController {
     private final ProjectService projectService;
 
@@ -27,9 +33,9 @@ public class ProjectController {
         return "projects";
     }
 
-    @GetMapping("/api/projects/{project_Id}")
-    public ResponseEntity<Project> getProject(@PathVariable Long project_Id) {
-        Project project = projectService.getProject(project_Id);
+    @GetMapping("/api/projects/{projectId}")
+    public ResponseEntity<Project> getProject(@PathVariable Long projectId) {
+        Project project = projectService.getProject(projectId);
         if (project != null) {
             return new ResponseEntity<>(project, HttpStatus.OK);
         }
@@ -37,8 +43,23 @@ public class ProjectController {
     }
 
     @PostMapping("/api/projects")
-    public ResponseEntity<String> addProject(@RequestBody ProjectAddDto projectAddDto) {
+    public ResponseEntity<String> addProject(@Validated @RequestBody ProjectAddDto projectAddDto, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            String errorMessage = Objects.requireNonNull(bindingResult.getFieldError()).getDefaultMessage();
+            return new ResponseEntity<>("msg:"+errorMessage, HttpStatus.BAD_REQUEST);
+        }
         HttpStatus httpStatus = projectService.saveProject(projectAddDto);
+        return new ResponseEntity<>(httpStatus);
+    }
+
+    @PatchMapping("/api/projects/{projectId}")
+    public ResponseEntity<String> updateProject(@PathVariable Long projectId, @Validated @RequestBody ProjectUpdateDto projectUpdateDto, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            String errorMessage = Objects.requireNonNull(bindingResult.getFieldError()).getDefaultMessage();
+            return new ResponseEntity<>("msg:"+errorMessage, HttpStatus.BAD_REQUEST);
+        }
+        log.info("projectUpdateDto = {}", projectUpdateDto);
+        HttpStatus httpStatus = projectService.updateProject(projectId, projectUpdateDto);
         return new ResponseEntity<>(httpStatus);
     }
 

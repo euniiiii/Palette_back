@@ -2,6 +2,7 @@ package com.project.palette.service;
 
 import com.project.palette.domain.Project;
 import com.project.palette.dto.ProjectAddDto;
+import com.project.palette.dto.ProjectUpdateDto;
 import com.project.palette.repository.DslProjectRepository;
 import com.project.palette.repository.ProjectRepository;
 import lombok.RequiredArgsConstructor;
@@ -9,12 +10,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class ProjectService {
     private final ProjectRepository projectRepository;
     private final DslProjectRepository dslProjectRepository;
@@ -27,7 +30,7 @@ public class ProjectService {
                 projectRepository.findById(projectId);
         return findProject.orElse(null);
     }
-
+    @Transactional
     public HttpStatus saveProject(ProjectAddDto projectAddDto) {
         Project project = Project.builder()
                 .title(projectAddDto.getTitle())
@@ -42,5 +45,16 @@ public class ProjectService {
         }
         return HttpStatus.BAD_REQUEST;
 
+    }
+
+    @Transactional
+    public HttpStatus updateProject(Long projectId, ProjectUpdateDto projectUpdateDto) {
+        Optional<Project> findProject = projectRepository.findById(projectId);
+        if (!findProject.isPresent()) {
+            return HttpStatus.NOT_FOUND;
+        }
+        Project project = findProject.get();
+        project.updateProject(projectUpdateDto);
+        return HttpStatus.OK;
     }
 }

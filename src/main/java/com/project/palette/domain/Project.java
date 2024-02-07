@@ -1,5 +1,6 @@
 package com.project.palette.domain;
 
+import com.project.palette.dto.ProjectUpdateDto;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,4 +26,8 @@ public class Project extends BaseEntity{
     private UploadFile uploadFile;
 
 
+    public void updateProject(ProjectUpdateDto projectUpdateDto) {
+        title = projectUpdateDto.getTitle();
+        content = projectUpdateDto.getContent();
+    }
 }
