@@ -27,8 +27,8 @@ public class SecurityConfig {
                 .csrf(CsrfConfigurer::disable)
                 .authorizeHttpRequests(authorize ->
                         authorize
-                                .requestMatchers("/users/register").permitAll()
-                                .requestMatchers("/users/**").hasRole("USER")
+                                .requestMatchers("/member/register").permitAll()
+                                .requestMatchers("/member/**").hasRole("USER")
                                 .anyRequest().authenticated())
                 .build();
     }
