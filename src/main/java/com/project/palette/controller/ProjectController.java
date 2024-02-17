@@ -72,4 +72,13 @@ public class ProjectController {
         return new ResponseEntity<>(httpStatus);
     }
 
+    @PostMapping("/api/projects/{projectId}/heart")
+    public ResponseEntity<String> updateHeart(@PathVariable Long projectId) {
+        HttpStatus httpStatus = projectService.updateHeart(projectId);
+        if (httpStatus.equals(HttpStatus.NOT_FOUND)) {
+            return new ResponseEntity<>("이미 삭제된 게시글입니다.", httpStatus);
+        }
+        return new ResponseEntity<>(httpStatus);
+    }
+
 }

@@ -30,4 +30,8 @@ public class Project extends BaseEntity{
         title = projectUpdateDto.getTitle();
         content = projectUpdateDto.getContent();
     }
+
+    public void updateHeart() {
+        likeCount++;
+    }
 }

@@ -66,4 +66,13 @@ public class ProjectService {
         projectRepository.delete(findProject.get());
         return HttpStatus.OK;
     }
+    @Transactional
+    public HttpStatus updateHeart(Long projectId) {
+        Optional<Project> findProject = projectRepository.findById(projectId);
+        if (findProject.isEmpty()) {
+            return HttpStatus.NOT_FOUND;
+        }
+        findProject.get().updateHeart();
+        return HttpStatus.OK;
+    }
 }
