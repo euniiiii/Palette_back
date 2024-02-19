@@ -24,20 +24,19 @@ import java.util.Objects;
 public class ProjectController {
     private final ProjectService projectService;
 
-    @GetMapping("/project")
-    public String projects(Model model, @PageableDefault Pageable pageable) {
+    @GetMapping("/api/projects")
+    public ResponseEntity<Page<Project>> projects(@PageableDefault Pageable pageable) {
         Page<Project> projects =
                 projectService.getProjects(pageable);
-        model.addAttribute("projects", projects);
 
-        return "projects";
+        return ResponseEntity.ok(projects);
     }
 
     @GetMapping("/api/projects/{projectId}")
     public ResponseEntity<Project> getProject(@PathVariable Long projectId) {
         Project project = projectService.getProject(projectId);
         if (project != null) {
-            return new ResponseEntity<>(project, HttpStatus.OK);
+            return ResponseEntity.ok(project);
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
