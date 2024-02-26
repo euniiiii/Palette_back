@@ -1,7 +1,7 @@
 package com.project.palette.controller;
 
-import com.project.palette.dto.request.RegisterMemberRequestDto;
-import com.project.palette.dto.response.MemberResponseDto;
+import com.project.palette.dto.member.RegisterMemberRequestDto;
+import com.project.palette.dto.member.MemberResponseDto;
 import com.project.palette.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

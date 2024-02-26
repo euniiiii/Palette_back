@@ -1,7 +1,6 @@
-package com.project.palette.dto.request;
+package com.project.palette.dto.member;
 
 import com.project.palette.domain.Member;
-import com.project.palette.domain.Role;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +29,6 @@ public class RegisterMemberRequestDto {
                 .email(request.getEmail())
                 .password(request.getPassword())
                 .name(request.getName())
-                .role(Role.USER)
                 .build();
     }
 }

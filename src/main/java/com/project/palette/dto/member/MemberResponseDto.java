@@ -1,4 +1,4 @@
-package com.project.palette.dto.response;
+package com.project.palette.dto.member;
 
 import com.project.palette.domain.Member;
 import lombok.Builder;
@@ -23,7 +23,7 @@ public class MemberResponseDto {
     public static MemberResponseDto fromEntity(Member member) {
         return MemberResponseDto.builder()
                 .email(member.getEmail())
-                .name(member.getUsername())
+                .name(member.getName())
                 .build();
     }
 }
