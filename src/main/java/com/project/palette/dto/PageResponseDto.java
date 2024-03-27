@@ -14,8 +14,7 @@ public class PageResponseDto<E> {
     private List<Integer> pageNumList;
     private PageRequestDto pageRequestDto;
     private boolean prev, next;
-    private int totalCnt, totalPageCnt;
-    private int prevPageNo, nextPageNo;
+    private int totalCnt, prevPageNo, nextPageNo, current;
 
     @Builder(builderMethodName = "withAll")
     public PageResponseDto(List<E> dtoList, PageRequestDto pageRequestDto, long total) {
@@ -34,5 +33,6 @@ public class PageResponseDto<E> {
         this.pageNumList = IntStream.rangeClosed(start, end).boxed().collect(Collectors.toList());
         this.prevPageNo = prev ? start - 1 : 0;
         this.nextPageNo = next ? end + 1 : 0;
+        this.current = pageRequestDto.getPage();
     }
 }
